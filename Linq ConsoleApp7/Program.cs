@@ -1,29 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using static ListGenerators;
 
-internal class ListGenerators
+internal static class ListGenerators
 {
     public static List<Product> ProductList { get; } = new()
     {
-        new Product("Chai", "Beverages", 18m, 39),
-        new Product("Chang", "Beverages", 19m, 17),
-        new Product("Aniseed Syrup", "Condiments", 10m, 13),
-        new Product("Chef Anton's Cajun Seasoning", "Condiments", 22m, 53),
-        new Product("Ikura", "Seafood", 31m, 20),
-        new Product("Konbu", "Seafood", 6m, 24)
+        new("Chai", "Beverages", 18m, 39),
+        new("Chang", "Beverages", 19m, 17),
+        new("Aniseed Syrup", "Condiments", 10m, 13),
+        new("Chef Anton's Cajun Seasoning", "Condiments", 22m, 53),
+        new("Ikura", "Seafood", 31m, 20),
+        new("Konbu", "Seafood", 6m, 24)
     };
 
     public static List<Customer> CustomerList { get; } = new()
     {
-        new Customer("ALFKI", new List<Order>
-        {
-            new Order(new DateTime(1997, 8, 25))
-        }),
-        new Customer("ANATR", new List<Order>
-        {
-            new Order(new DateTime(1996, 9, 18))
-        })
+        new("ALFKI", new List<Order> { new(new DateTime(1997, 8, 25)) }),
+        new("ANATR", new List<Order> { new(new DateTime(1996, 9, 18)) })
     };
 }
 
@@ -35,85 +29,57 @@ internal sealed record Order(DateTime OrderDate);
 
 namespace Linq_ConsoleApp7
 {
-
-    internal class Program
+internal static class Program
+{
+    private static void Main()
     {
-     
-        static void Main()
+        var q1 = ListGenerators.ProductList.Where(p => p.Category == "Seafood");
+        foreach (var p in q1) Console.WriteLine($"{p.ProductName} - {p.UnitPrice}");
+
+        var q2 = ListGenerators.ProductList.Select(p => p.ProductName);
+        foreach (var name in q2) Console.WriteLine(name);
+
+        var q3 = ListGenerators.ProductList.OrderBy(p => p.UnitPrice);
+        foreach (var p in q3) Console.WriteLine($"{p.ProductName} - {p.UnitPrice}");
+
+        var q4 = ListGenerators.ProductList.Where(p => p.UnitPrice >= 10 && p.UnitPrice <= 30);
+        foreach (var p in q4) Console.WriteLine($"{p.ProductName} - {p.UnitPrice}");
+
+        var q5 = ListGenerators.ProductList.Where(p => p.UnitsInStock > 0 && p.Category == "Condiments");
+        foreach (var p in q5) Console.WriteLine($"{p.ProductName} - Stock: {p.UnitsInStock}");
+
+        var q6 = ListGenerators.ProductList.Select(p => new
         {
-            //Console.WriteLine("Hello, World!");
+            Name = p.ProductName,
+            Price = p.UnitPrice,
+            StockStatus = p.UnitsInStock > 0 ? "Available" : "Out of Stock"
+        });
+        foreach (var p in q6) Console.WriteLine($"{p.Name} - {p.Price} - {p.StockStatus}");
 
+        var q7 = ListGenerators.ProductList.Select((p, i) => new { Index = i + 1, p.ProductName });
+        foreach (var p in q7) Console.WriteLine($"{p.Index}. {p.ProductName}");
 
-         
+        var q8 = ListGenerators.ProductList.OrderBy(p => p.Category).ThenByDescending(p => p.UnitPrice);
+        foreach (var p in q8) Console.WriteLine($"{p.Category} - {p.ProductName} - {p.UnitPrice}");
 
-                var q1 = ProductList.Where(p => p.Category == "Seafood");
-                foreach (var p in q1) Console.WriteLine($"{p.ProductName} - {p.UnitPrice}");
+        var q9 = ListGenerators.ProductList.Where(p => p.Category == "Beverages").OrderByDescending(p => p.UnitsInStock);
+        foreach (var p in q9) Console.WriteLine($"{p.ProductName} - Stock: {p.UnitsInStock}");
 
+        var q10 = from c in ListGenerators.CustomerList
+                  from o in c.Orders
+                  where o.OrderDate.Year >= 1997
+                  select new { c.CustomerID, o.OrderDate };
+        foreach (var x in q10) Console.WriteLine($"{x.CustomerID} - {x.OrderDate:yyyy-MM-dd}");
 
-                var q2 = ProductList.Select(p => p.ProductName);
-                foreach (var n in q2) Console.WriteLine(n);
+        var q11 = ListGenerators.ProductList.Select((p, i) => new { Position = i + 1, p.ProductName });
+        foreach (var p in q11) Console.WriteLine($"{p.Position} - {p.ProductName}");
 
+        string[] words = { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" };
+        var q12 = words.OrderBy(w => w.Length).ThenBy(w => w, StringComparer.OrdinalIgnoreCase);
+        foreach (var word in q12) Console.WriteLine(word);
 
-                var q3 = ProductList.OrderBy(p => p.UnitPrice);
-                foreach (var p in q3) Console.WriteLine($"{p.ProductName} - {p.UnitPrice}");
-
-
-                var q4 = ProductList.Where(p => p.UnitPrice >= 10 && p.UnitPrice <= 30);
-                foreach (var p in q4) Console.WriteLine($"{p.ProductName} - {p.UnitPrice}");
-
-
-                var q5 = ProductList.Where(p => p.UnitsInStock > 0 && p.Category == "Condiments");
-                foreach (var p in q5) Console.WriteLine(p.ProductName);
-
-
-                var q6 = ProductList.Select(p => new
-                {
-                    Name = p.ProductName,
-                    Price = p.UnitPrice,
-                    StockStatus = p.UnitsInStock > 0 ? "Available" : "Out of Stock"
-                });
-                foreach (var x in q6) Console.WriteLine($"{x.Name} | {x.Price} | {x.StockStatus}");
-
-
-                var q7 = ProductList.Select((p, i) => $"{i + 1}. {p.ProductName}");
-                foreach (var s in q7) Console.WriteLine(s);
-
-
-                var q8 = ProductList.OrderBy(p => p.Category)
-                                    .ThenByDescending(p => p.UnitPrice);
-                foreach (var p in q8) Console.WriteLine($"{p.Category} - {p.ProductName} - {p.UnitPrice}");
-
-
-                var q9 = ProductList.Where(p => p.Category == "Beverages")
-                                    .OrderByDescending(p => p.UnitsInStock);
-                foreach (var p in q9) Console.WriteLine($"{p.ProductName} - {p.UnitsInStock}");
-
-
-                var q10 = from c in CustomerList
-                          from o in c.Orders
-                          where o.OrderDate.Year >= 1997
-                          select new { c.CustomerID, o.OrderDate };
-                foreach (var x in q10) Console.WriteLine($"{x.CustomerID} - {x.OrderDate:d}");
-
-
-                var q11 = ProductList.Select((p, i) => new { Index = i + 1, p.ProductName });
-                foreach (var x in q11) Console.WriteLine($"{x.Index}. {x.ProductName}");
-
-
-                string[] Arr = { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" };
-                var q12 = Arr.OrderBy(w => w.Length)
-                             .ThenBy(w => w, StringComparer.OrdinalIgnoreCase);
-                foreach (var w in q12) Console.WriteLine(w);
-
-
-                string[] digits = { "zero", "one", "two", "three", "four",
-                            "five", "six", "seven", "eight", "nine" };
-                var q13 = digits.Where(d => d[1] == 'i').Reverse();
-                foreach (var d in q13) Console.WriteLine(d);
-            }
-        }
-
-
-
-
+        var q13 = words.Where(w => w.Length > 1 && char.ToLower(w[1]) == 'i').Reverse();
+        foreach (var word in q13) Console.WriteLine(word);
+    }
+}
 }
